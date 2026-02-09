@@ -3,8 +3,7 @@ import { SessionRecord } from './types';
 
 export const sessionElapsedMs = (session: SessionRecord, now: number): number => {
   const end = session.endedAt ?? now;
-  const raw = durationMs(session.startedAt, end);
-  return Math.max(0, raw - session.pausedDurationMs);
+  return Math.max(0, durationMs(session.startedAt, end) - session.pausedDurationMs);
 };
 
 export const costForElapsed = (elapsedMs: number, hourlyRate: number): number => {

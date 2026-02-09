@@ -1,52 +1,67 @@
-# Billiards Management App (Functional Clone)
+# Billiards Manager (Production-Oriented Next.js App)
 
-A Next.js + TypeScript clone of a billiards hall management dashboard, preserving authentication gating, table timing lifecycles, billing, store persistence, responsive UI, notifications, and theme support.
+A production-oriented billiards hall management application built with **Next.js App Router + TypeScript**.
+
+## What makes this production-ready
+
+- **Server-enforced authentication** using signed, HTTP-only session cookies.
+- **Route protection** via `middleware.ts` for dashboard and management APIs.
+- **Backend-owned business logic** for table lifecycle operations (start/pause/resume/stop).
+- **Persistent backend state** in `data/state.json` managed by server utilities.
+- **Deterministic billing/time helpers** with explicit timestamp support for tests.
+- **Responsive dashboard UI** with live elapsed timer, running totals, toast feedback, and theme toggle.
 
 ## Architecture Summary
 
-- **App Router** entry points in `app/`.
-- **Central store** in `lib/store.ts` using Zustand with localStorage persistence.
-- **Domain utilities** in `lib/billing.ts`, `lib/time.ts`, and `lib/tableState.ts`.
-- **Reusable UI** components under `components/`.
-- **Hooks** for live clock and theme behavior under `hooks/`.
-- **Validation tests** in `__tests__/` for auth gating, session timing, billing, and table transitions.
+- `app/`:
+  - `/` login screen,
+  - `/dashboard` protected management interface,
+  - `/api/*` authenticated operational endpoints.
+- `lib/server/auth.ts`: credential validation + cookie token signing/parsing.
+- `lib/server/state.ts`: persistent state read/write and lifecycle transitions.
+- `lib/billing.ts` + `lib/time.ts`: reusable domain math and formatting utilities.
+- `components/dashboard-client.tsx`: live operational UI bound to backend APIs.
 
-## Setup / Run
+## Setup
 
-```bash
-npm install
-npm run dev
-```
+1. Install dependencies
+   ```bash
+   npm install
+   ```
+2. Optional environment overrides
+   ```bash
+   export BMAPP_ADMIN_USER=admin
+   export BMAPP_ADMIN_PASSWORD=admin123
+   export SESSION_SECRET='change-this-in-production'
+   ```
+3. Start app
+   ```bash
+   npm run dev
+   ```
+4. Open `http://localhost:3000`
 
-Then open `http://localhost:3000`.
+## Feature Checklist (Parity Mapping)
 
-## Feature Checklist (Original capability ➜ Duplicate implementation)
+- [x] Authentication / session handling → `/api/auth/login`, `/api/auth/logout`, signed cookie session, middleware-protected pages/APIs.
+- [x] Access control gating → `middleware.ts` + server-side redirect checks.
+- [x] Multiple table representation → persisted `tables[]` in `data/state.json`.
+- [x] Table lifecycle transitions → `startTable`, `pauseTable`, `resumeTable`, `stopTable` in `lib/server/state.ts`.
+- [x] Start/stop timing sessions with accurate elapsed tracking → `sessionElapsedMs` with paused time subtraction.
+- [x] Configurable pricing and billing → `/api/rates` + `totalForSession`/`costForElapsed`.
+- [x] Running and final totals → dashboard card live totals + stop response message.
+- [x] Centralized predictable state management → server-owned state transition layer.
+- [x] Persistence across reloads → file-backed state (`data/state.json`).
+- [x] Deterministic time utilities for testability → functions accept explicit timestamps.
+- [x] Dashboard UX parity + responsive + dark/light theme + toasts.
 
-- [x] Sign in / sign out flow ➜ `AuthGate` + `useAppStore` auth actions.
-- [x] Auth-protected content ➜ Dashboard rendered only after sign-in.
-- [x] Session persistence ➜ Zustand `persist` middleware storing auth/tables/sessions/rates.
-- [x] Multiple billiards tables ➜ Default 8 table entities in store.
-- [x] Table lifecycle states ➜ `available`, `occupied`, `paused`, `closed` domain status model.
-- [x] Start / end timing sessions ➜ Store actions with edge case guards.
-- [x] Pause / resume flow ➜ Pause timestamp + paused duration accumulation.
-- [x] Running elapsed timer and final duration ➜ `useNow` hook + time utility formatting.
-- [x] Billing from session duration ➜ `totalForSession` and `costForElapsed` with hourly rate.
-- [x] Configurable rates ➜ Toolbar rate input updating central store config.
-- [x] Running and final totals ➜ Table card live totals and stop-session toast total.
-- [x] Predictable centralized actions ➜ Typed actions in a single Zustand store.
-- [x] Time utility determinism ➜ Domain functions accept explicit `now` for testability.
-- [x] Dashboard UX parity ➜ grid layout, controls, statuses, toast feedback.
-- [x] Responsive desktop/mobile behavior ➜ CSS grid/flex with media query handling.
-- [x] Theme support (light/dark) ➜ `useTheme` hook and CSS variable themes.
-
-## Tests
+## Validation tests
 
 ```bash
 npm run test
 ```
 
 Covers:
-- auth gating,
-- session start/stop edge cases,
-- pause/resume lifecycle,
-- billing math and elapsed time calculations.
+- auth credential and token verification,
+- billing/time calculation correctness,
+- lifecycle transitions and transition guard errors,
+- rate validation.

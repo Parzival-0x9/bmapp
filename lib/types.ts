@@ -2,7 +2,7 @@ export type TableStatus = 'available' | 'occupied' | 'paused' | 'closed';
 
 export interface AuthUser {
   id: string;
-  name: string;
+  username: string;
   role: 'manager' | 'staff';
 }
 
@@ -25,4 +25,11 @@ export interface BilliardsTable {
 
 export interface AppRateConfig {
   defaultHourlyRate: number;
+}
+
+export interface HallState {
+  tables: BilliardsTable[];
+  sessions: Record<string, SessionRecord>;
+  rates: AppRateConfig;
+  updatedAt: number;
 }

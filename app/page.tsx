@@ -1,18 +1,14 @@
-'use client';
+import { redirect } from 'next/navigation';
+import { LoginForm } from '@/components/login-form';
+import { requireUser } from '@/lib/server/auth';
 
-import { AuthGate } from '@/components/auth-gate';
-import { Dashboard } from '@/components/dashboard';
-import { Toast } from '@/components/toast';
-import { useAppStore } from '@/lib/store';
-
-export default function HomePage() {
-  const toast = useAppStore((s) => s.toast);
-  const clearToast = useAppStore((s) => s.clearToast);
+export default async function HomePage() {
+  const user = await requireUser();
+  if (user) redirect('/dashboard');
 
   return (
-    <AuthGate>
-      <Dashboard />
-      {toast && <Toast message={toast} onClose={clearToast} />}
-    </AuthGate>
+    <main className="centered">
+      <LoginForm />
+    </main>
   );
 }
