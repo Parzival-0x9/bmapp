@@ -3,6 +3,12 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FormEvent, useState } from 'react';
 
+const resolveNextPath = (nextParam: string | null): string => {
+  if (!nextParam) return '/dashboard';
+  if (!nextParam.startsWith('/') || nextParam.startsWith('//')) return '/dashboard';
+  return nextParam;
+};
+
 export const LoginForm = () => {
   const router = useRouter();
   const params = useSearchParams();
@@ -23,7 +29,9 @@ export const LoginForm = () => {
     const payload = await res.json();
     setLoading(false);
     if (!res.ok) return setError(payload.message || 'Login failed');
-    router.push(params.get('next') || '/dashboard');
+
+    const nextPath = resolveNextPath(params.get('next'));
+    window.location.assign(nextPath);
     router.refresh();
   };
 
