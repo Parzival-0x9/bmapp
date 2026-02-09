@@ -1,15 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { parseSessionToken, sessionCookieName } from '@/lib/server/auth';
 
-const protectedMatchers = ['/dashboard', '/api/state', '/api/tables', '/api/rates'];
+const SESSION_COOKIE = 'bmapp_session';
 
 export function middleware(req: NextRequest) {
-  const needsAuth = protectedMatchers.some((p) => req.nextUrl.pathname.startsWith(p));
-  if (!needsAuth) return NextResponse.next();
-
-  const token = req.cookies.get(sessionCookieName)?.value;
-  const user = token ? parseSessionToken(token) : null;
-  if (user) return NextResponse.next();
+  const token = req.cookies.get(SESSION_COOKIE)?.value;
+  if (token) return NextResponse.next();
 
   if (req.nextUrl.pathname.startsWith('/api/')) {
     return NextResponse.json({ ok: false, message: 'Unauthorized' }, { status: 401 });
