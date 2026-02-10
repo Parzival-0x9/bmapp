@@ -3,7 +3,11 @@ import path from 'node:path';
 import { HallState, SessionRecord } from '@/lib/types';
 import { totalForSession } from '@/lib/billing';
 
+
+const getDataFile = () => process.env.STATE_FILE_PATH || path.join(process.cwd(), 'data', 'state.json');
+
 const DATA_FILE = path.join(process.cwd(), 'data', 'state.json');
+
 
 const defaultState = (): HallState => ({
   tables: Array.from({ length: 8 }, (_, i) => ({ id: `table-${i + 1}`, name: `Table ${i + 1}`, status: 'available' })),
@@ -14,22 +18,38 @@ const defaultState = (): HallState => ({
 
 async function ensureState(): Promise<void> {
   try {
+
+    await fs.access(getDataFile());
+  } catch {
+    const dataFile = getDataFile();
+    await fs.mkdir(path.dirname(dataFile), { recursive: true });
+    await fs.writeFile(dataFile, JSON.stringify(defaultState(), null, 2), 'utf8');
+
     await fs.access(DATA_FILE);
   } catch {
     await fs.mkdir(path.dirname(DATA_FILE), { recursive: true });
     await fs.writeFile(DATA_FILE, JSON.stringify(defaultState(), null, 2), 'utf8');
+ 
   }
 }
 
 export async function readState(): Promise<HallState> {
   await ensureState();
+
+  const raw = await fs.readFile(getDataFile(), 'utf8');
+
   const raw = await fs.readFile(DATA_FILE, 'utf8');
+
   return JSON.parse(raw) as HallState;
 }
 
 export async function writeState(next: HallState): Promise<void> {
   next.updatedAt = Date.now();
+
+  await fs.writeFile(getDataFile(), JSON.stringify(next, null, 2), 'utf8');
+
   await fs.writeFile(DATA_FILE, JSON.stringify(next, null, 2), 'utf8');
+
 }
 
 export async function updateState(mutator: (state: HallState) => { ok: boolean; message: string; total?: number }): Promise<{ ok: boolean; message: string; total?: number }> {
