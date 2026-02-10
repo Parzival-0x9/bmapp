@@ -4,6 +4,7 @@ import { AuthUser } from '@/lib/types';
 
 const SESSION_COOKIE = 'bmapp_session';
 
+
 interface AuthConfig {
   secret: string;
   adminUser: string;
@@ -30,8 +31,14 @@ const getAuthConfig = (): AuthConfig => {
   return { secret, adminUser, adminPass };
 };
 
+const secret = process.env.SESSION_SECRET || 'dev-only-change-me';
+const adminUser = process.env.BMAPP_ADMIN_USER || 'admin';
+const adminPass = process.env.BMAPP_ADMIN_PASSWORD || 'admin123';
+
+
 const b64 = (v: string) => Buffer.from(v, 'utf8').toString('base64url');
 const unb64 = (v: string) => Buffer.from(v, 'base64url').toString('utf8');
+
 
 const sign = (payload: string) => {
   const { secret } = getAuthConfig();
@@ -42,6 +49,12 @@ export const verifyCredentials = (username: string, password: string): boolean =
   const { adminUser, adminPass } = getAuthConfig();
   return username === adminUser && password === adminPass;
 };
+
+const sign = (payload: string) => createHmac('sha256', secret).update(payload).digest('base64url');
+
+export const verifyCredentials = (username: string, password: string): boolean =>
+  username === adminUser && password === adminPass;
+
 
 export const createSessionToken = (user: AuthUser): string => {
   const payload = JSON.stringify({ ...user, exp: Date.now() + 1000 * 60 * 60 * 12 });

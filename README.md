@@ -28,6 +28,7 @@ A production-oriented billiards hall management application built with **Next.js
    ```bash
    npm install
    ```
+
 2. Required environment variables for production
    ```bash
    export BMAPP_ADMIN_USER=admin
@@ -35,6 +36,14 @@ A production-oriented billiards hall management application built with **Next.js
    export SESSION_SECRET='a-long-random-secret'
    ```
    > In production, the app now fails fast if these are missing to prevent insecure fallback credentials.
+
+2. Optional environment overrides
+   ```bash
+   export BMAPP_ADMIN_USER=admin
+   export BMAPP_ADMIN_PASSWORD=admin123
+   export SESSION_SECRET='change-this-in-production'
+   ```
+
 3. Start app
    ```bash
    npm run dev
@@ -72,3 +81,4 @@ Covers:
 
 - This repo currently persists hall state to `data/state.json`. On ephemeral/serverless environments, prefer migrating to a managed database for durable multi-instance state.
 - `next` dependency has been bumped from `14.2.5` to `14.2.33` to address the security advisory shown in Vercel build output.
+
